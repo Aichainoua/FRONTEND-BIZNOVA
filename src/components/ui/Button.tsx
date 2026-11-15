@@ -1,103 +1,93 @@
 import React from 'react';
 import {
-  TouchableOpacity,
-  Text,
   ActivityIndicator,
+  Pressable,
   StyleSheet,
-  type TouchableOpacityProps,
+  View,
   type StyleProp,
   type ViewStyle,
-  type TextStyle,
 } from 'react-native';
-import { useThemeStore } from '../../stores/themeStore';
-import { spacing, typography } from '../../theme/spacing';
+import type { LucideIcon } from 'lucide-react-native';
+import { useColors } from '../../theme';
+import { layout, radius, shadows } from '../../theme/spacing';
+import { Text } from './Text';
 
-export interface ButtonProps extends TouchableOpacityProps {
+export interface ButtonProps {
   title: string;
-  variant?: 'primary' | 'secondary' | 'outline' | 'danger';
-  size?: 'sm' | 'md' | 'lg';
-  isLoading?: boolean;
+  onPress: () => void;
+  /** `primary` : action principale de l'écran. `outline` : action secondaire. */
+  variant?: 'primary' | 'outline';
+  /** Icône Lucide affichée après le libellé. */
+  icon?: LucideIcon;
+  disabled?: boolean;
+  loading?: boolean;
+  /** Ombre portée (réservée aux actions de sortie comme l'export PDF). */
+  elevated?: boolean;
+  accessibilityHint?: string;
   style?: StyleProp<ViewStyle>;
-  textStyle?: StyleProp<TextStyle>;
 }
 
 export const Button: React.FC<ButtonProps> = ({
   title,
+  onPress,
   variant = 'primary',
-  size = 'md',
-  isLoading = false,
-  disabled,
+  icon: Icon,
+  disabled = false,
+  loading = false,
+  elevated = false,
+  accessibilityHint,
   style,
-  textStyle,
-  ...props
 }) => {
-  const { colors } = useThemeStore();
+  const colors = useColors();
+  const isPrimary = variant === 'primary';
+  const inactive = disabled || loading;
 
-  const getBackgroundColor = () => {
-    if (disabled) return colors.border;
-    if (variant === 'primary') return colors.primary;
-    if (variant === 'secondary') return colors.surface;
-    if (variant === 'danger') return colors.danger;
-    return 'transparent';
-  };
-
-  const getTextColor = () => {
-    if (disabled) return colors.textSecondary;
-    if (variant === 'primary' || variant === 'danger') return '#FFFFFF';
-    if (variant === 'outline') return colors.text;
-    return colors.text;
-  };
-
-  const getPadding = () => {
-    if (size === 'sm') return { paddingVertical: spacing.xs + 2, paddingHorizontal: spacing.sm };
-    if (size === 'lg') return { paddingVertical: spacing.md, paddingHorizontal: spacing.lg };
-    return { paddingVertical: spacing.sm + 4, paddingHorizontal: spacing.md };
-  };
+  const backgroundColor = isPrimary ? colors.primary : colors.surface;
+  const borderColor = isPrimary ? colors.primary : colors.border;
+  const foreground = isPrimary ? colors.onPrimary : colors.primary;
 
   return (
-    <TouchableOpacity
-      style={[
-        styles.button,
-        getPadding(),
-        {
-          backgroundColor: getBackgroundColor(),
-          borderColor: variant === 'outline' ? colors.border : 'transparent',
-          borderWidth: variant === 'outline' ? 1 : 0,
-        },
+    <Pressable
+      onPress={onPress}
+      disabled={inactive}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityHint={accessibilityHint}
+      accessibilityState={{ disabled: inactive, busy: loading }}
+      style={({ pressed }) => [
+        styles.base,
+        { backgroundColor, borderColor, opacity: inactive ? 0.5 : pressed ? 0.88 : 1 },
+        elevated && isPrimary ? shadows.elevatedAction : null,
         style,
       ]}
-      disabled={disabled || isLoading}
-      activeOpacity={0.8}
-      {...props}
     >
-      {isLoading ? (
-        <ActivityIndicator color={getTextColor()} size="small" />
+      {loading ? (
+        <ActivityIndicator color={foreground} />
       ) : (
-        <Text
-          style={[
-            styles.text,
-            {
-              color: getTextColor(),
-              fontSize: size === 'sm' ? typography.fontSize.sm : typography.fontSize.md,
-            },
-            textStyle,
-          ]}
-        >
-          {title}
-        </Text>
+        <View style={styles.content}>
+          <Text variant="bodyStrong" style={{ color: foreground }}>
+            {title}
+          </Text>
+          {Icon ? <Icon size={18} color={foreground} strokeWidth={2} /> : null}
+        </View>
       )}
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 
 const styles = StyleSheet.create({
-  button: {
-    borderRadius: 12,
+  base: {
+    minHeight: layout.controlHeight,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    paddingHorizontal: 18,
     alignItems: 'center',
     justifyContent: 'center',
-    flexDirection: 'row',
   },
-  text: {
-    fontWeight: '600',
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
   },
 });

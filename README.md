@@ -1,213 +1,116 @@
-# React Native Expo Starter Template (Production-Ready)
+# Biznova — application mobile (frontend)
 
-Template de démarrage moderne, robuste et modulaire pour applications mobiles **React Native + Expo**, préconfiguré avec **TypeScript**, **React Navigation**, gestion des thèmes **Clair / Sombre**, icônes vectorielles **Lucide** (zéro emoji), store global **Zustand**, et configuration prête pour la génération d'**APKs de développement et de production (compatibilité Android 7.0+ / API 24)**.
+Application mobile d'analyse financière prévisionnelle et de gestion budgétaire pour les porteurs de projets et les petites entreprises (FCFA par défaut). Ce dépôt contient le frontend **React Native + Expo** ; il suit le cahier des charges *Smart Realization* et la maquette Figma « Biznova ».
 
----
+## État d'avancement
 
-## 1. Stack Technique
+| Périmètre | État |
+| :--- | :--- |
+| Design system (tokens, composants, mise en page, barre d'onglets) | Fait |
+| Connexion et espace de travail (maquettes 01, 02) | Fait — authentification simulée |
+| **Workflow B** : configuration, tableau de bord, opérations et étiquettes, ajout, budget (y compris dépassement), rapport mensuel (maquettes 07 à 13) | Fait — données locales, export PDF |
+| Workflow A : analyse prévisionnelle (maquettes 03 à 06) | À faire — l'onglet « Projets » est un écran d'attente |
+| API, authentification réelle, persistance (critère R9) | À brancher — voir « Ce qui reste à brancher » |
 
-* **Framework** : React Native (0.86+) + Expo (SDK 57+)
-* **Langage** : TypeScript 6.x (Typage strict)
-* **Navigation** : React Navigation v7 (`@react-navigation/native-stack`)
-* **State Management** : Zustand v5 (Persistant & ultra-léger)
-* **Design & Thème** : Mode Clair par défaut + Switch Sombre + Palette dynamique
-* **Iconographie** : `lucide-react-native` (100% vectoriel, aucune utilisation d'emojis)
-* **Requêtes API** : Axios + TanStack React Query v5
-* **Temps Réel** : Socket.IO Client
-* **Builds Android** : Support des builds locaux Gradle et cloud EAS Build
+## Stack
 
----
+* **Framework** : React Native 0.86 + Expo SDK 57, TypeScript strict
+* **Navigation** : React Navigation 7 (pile racine, onglets, pile « Entreprise »)
+* **État** : Zustand 5 · **Icônes** : lucide-react-native · **Police** : Inter (`@expo-google-fonts/inter`)
+* **Export PDF** : `expo-print` + `expo-sharing`
+* **Prévu pour la suite** : Axios + TanStack Query (API), Socket.IO (déjà installés, pas encore utilisés)
 
-## 2. Structure du Projet
-
-```
-react-native-expo-template/
-├── App.tsx                      # Point d'entrée principal avec providers
-├── app.json                     # Configuration Expo (Nom, Bundle ID, Package Name, Splash)
-├── eas.json                     # Profils de build APK / AAB (Development, Preview, Production)
-├── package.json                 # Dépendances et scripts de build
-├── tsconfig.json                # Configuration TypeScript
-├── assets/                      # Icônes adaptatives, splash screen et favicons
-└── src/
-    ├── api/                     # Client HTTP Axios et constantes d'endpoints
-    │   ├── client.ts
-    │   └── endpoints.ts
-    ├── components/              # Composants UI réutilisables
-    │   ├── common/              # ThemeToggle, Header, StatusBadge
-    │   └── ui/                  # Button, Input, Card, Badge
-    ├── navigation/              # Navigateurs Stack et définition des routes
-    │   ├── AppNavigator.tsx
-    │   └── routes.ts
-    ├── screens/                 # Écrans de l'application
-    │   ├── HomeScreen.tsx
-    │   └── DetailsScreen.tsx
-    ├── services/                # Services transverses (Socket.IO, notifications, GPS)
-    ├── stores/                  # Stores Zustand (themeStore, authStore)
-    │   └── themeStore.ts
-    ├── theme/                   # Palette de couleurs, espacements et typographie
-    │   ├── colors.ts
-    │   └── spacing.ts
-    ├── types/                   # Interfaces et types TypeScript
-    └── utils/                   # Fonctions utilitaires et formateurs
-```
-
----
-
-## 3. Démarrage Rapide
-
-### Prérequis
-* Node.js $\ge 18$
-* `pnpm` (ou `npm` / `yarn`)
-* JDK 17 ou 21
-* Android Studio & Android SDK (pour les tests et builds locaux)
-
-### Installation et lancement
+## Démarrage
 
 ```bash
-# 1. Cloner ou dupliquer ce dépôt
-git clone <URL_DU_REPO> mon-nouveau-projet
-cd mon-nouveau-projet
-
-# 2. Installer les dépendances
 pnpm install
-
-# 3. Lancer le serveur de développement Metro
-pnpm start
+cp .env.example .env     # puis ajuster si besoin
+pnpm start               # a = Android, i = iOS, w = web
+pnpm type-check          # à lancer avant chaque demande de fusion
 ```
 
-### Raccourcis dans le terminal Metro :
-* Appuyez sur `a` pour lancer sur émulateur ou appareil physique **Android**.
-* Appuyez sur `i` pour lancer sur simulateur **iOS**.
-* Appuyez sur `w` pour tester sur navigateur **Web**.
+`EXPO_PUBLIC_SEED_DATA` (voir `.env.example`) :
 
----
+* `true` : charge l'entreprise de démonstration « Nova Studio » (septembre et octobre 2026). Ses chiffres reproduisent exactement la maquette.
+* `false` ou absente : l'application démarre sans donnée et l'onglet « Entreprise » affiche l'écran de configuration (comportement réel).
 
-## 4. Comment Adapter ce Template pour une Nouvelle Application
+Après modification du `.env`, relancer Metro avec `pnpm start --clear`.
 
-Pour créer une nouvelle application à partir de ce template, effectuez ces 4 étapes simples :
+## Architecture
 
-### 1. Modifier le `package.json`
-Mettez à jour le champ `"name"` et `"description"` :
-```json
-{
-  "name": "mon-app-client",
-  "version": "1.0.0"
-}
+```
+src/
+├── domain/        Règles métier pures (aucune dépendance à React) : types, dates, calculs
+│                  budget / trésorerie / flux, catégories par secteur, validation
+├── mocks/         Jeu de données de démonstration (à supprimer quand l'API sera branchée)
+├── stores/        Zustand : businessStore (entreprise, opérations, période), sessionStore, themeStore
+├── hooks/         useBusiness / usePeriodData : données dérivées de la période sélectionnée
+├── services/      reportPdf : génération et partage du rapport mensuel
+├── navigation/    AppNavigator (racine) → MainTabs (onglets) → BusinessNavigator (pile Entreprise)
+├── screens/       auth · home · projects · business · reports
+├── components/
+│   ├── ui/        Briques du design system (Text, Button, Card, Badge, HeroCard, ProgressBar…)
+│   ├── forms/     Champs (Field, AmountInput, DateField, SelectField, TagInput)
+│   ├── finance/   Composants métier (PeriodSelector, OperationRow, FlowBarChart)
+│   └── layout/    Screen, AppHeader, PageIntro, TabBar
+├── theme/         Couleurs, espacements, typographie (source unique des valeurs visuelles)
+└── utils/         Formatage FCFA et dates en français, identité de l'utilisateur
 ```
 
-### 2. Configurer `app.json`
-Personnalisez les identifiants uniques de votre application :
-```json
-{
-  "expo": {
-    "name": "Mon Application",
-    "slug": "mon-app",
-    "version": "1.0.0",
-    "ios": {
-      "bundleIdentifier": "com.monentreprise.monapp"
-    },
-    "android": {
-      "package": "com.monentreprise.monapp",
-      "versionCode": 1
-    }
-  }
-}
+Principes :
+
+* **Calculs hors de l'interface.** Tout calcul financier vit dans `src/domain/finance.ts` (fonctions pures). Les écrans n'additionnent rien eux-mêmes ; ils lisent `usePeriodData()`.
+* **Une seule source pour l'apparence.** Couleurs, espacements et textes passent par `src/theme` et par le composant `Text`. Pas de valeur de couleur ni de police écrite en dur dans un écran.
+* **Routes typées.** Les noms de routes sont dans `navigation/routes.ts` et les paramètres dans `navigation/types.ts`.
+* **Montants** : toujours via `utils/format.ts` (espace insécable, vrai signe moins, FCFA). `Intl` n'est volontairement pas utilisé (support variable sur Android 7+).
+
+## Navigation
+
+```
+Racine
+├── Connexion                       (session fermée)
+└── Onglets                         (session ouverte)
+    ├── Accueil        Espace de travail
+    ├── Projets        Écran d'attente (workflow A)
+    ├── Entreprise     Pile : Configuration → Tableau de bord → Opérations · Ajout · Budget
+    └── Rapports       Rapport mensuel
 ```
 
-### 3. Remplacer les Assets Graphiques
-Dans le dossier `assets/` :
-* `icon.png` (1024x1024 px) : Icône de l'application
-* `splash-icon.png` (200x200 px) : Icône de l'écran de chargement
-* `android-icon-foreground.png` & `android-icon-background.png` : Icône adaptative Android
+La période (mois) est partagée par le tableau de bord, les opérations, le budget et le rapport. Le budget affiche automatiquement la variante « dépassement » lorsque les dépenses dépassent le budget global.
 
-### 4. Personnaliser la Charte Graphique
-Dans `src/theme/colors.ts`, modifiez simplement les couleurs principales (`primary`, `accent`, etc.).
+## Règles métier appliquées (cahier des charges § 5 et § 7)
 
----
+* Budget **global mensuel unique** (pas d'enveloppes par catégorie).
+* **Résultat estimé** (recettes − dépenses) et **trésorerie estimée** (solde initial + encaissements − décaissements) sont deux indicateurs distincts.
+* **Budget restant** = budget − dépenses ; une valeur négative signale un dépassement.
+* **Étiquettes** facultatives, multiples, créées librement ; elles servent au filtre (au moins une étiquette correspondante) et ne modifient aucun calcul.
+* Une opération exige un type, un montant strictement positif, une date comprise entre le début du suivi et aujourd'hui, et une catégorie. Les catégories varient selon le secteur.
 
-## 5. Guide Complet de Build des APKs (Android)
+## Ce qui reste à brancher
 
-Ce template supporte à la fois les **builds locaux sur votre machine (sans dépendre du cloud)** et les **builds automatisés via Expo EAS Build**.
+* **Authentification** : `sessionStore` est en mémoire, toute adresse e-mail valide ouvre l'application (`TODO(auth)`).
+* **Persistance et API** : les données sont perdues à la fermeture de l'application (critère R9). Remplacer `businessStore` par les appels API en conservant son interface, puis supprimer `src/mocks/`.
+* **Workflow A** : écrans 03 à 06 de la maquette.
+* **Mode sombre** : la palette et le sélecteur (`ThemeToggle`) existent, mais aucun écran ne l'expose et la maquette est uniquement claire.
+* **Tests** : les fonctions de `src/domain` sont prêtes à être testées unitairement.
+* **Icônes et écran de démarrage** : toujours ceux du template, à remplacer par le logo Biznova. Identifiants `com.company.apptemplate` à remplacer par ceux de l'équipe avant toute publication.
 
----
+## Builds Android
 
-### Option A : Génération Locale d'APK (Recommandée & Rapide)
+Le projet cible Android 7.0+ (API 24).
 
-Cette méthode génère directement les fichiers natifs Android et compile l'APK sur votre machine Linux / macOS / Windows.
-
-#### 1. Générer le dossier natif `android/`
 ```bash
-npx expo prebuild --clean
-```
+# Build local
+pnpm prebuild                       # génère android/
+pnpm build:android:local:debug      # APK de debug
+pnpm build:android:local:release    # APK de release
 
-#### 2. Générer l'APK de Développement / Debug
-```bash
-cd android
-./gradlew assembleDebug
-```
-* **Emplacement du fichier généré** :  
-  `android/app/build/outputs/apk/debug/app-debug.apk`
-
-#### 3. Générer l'APK Autonome de Production / Release
-```bash
-cd android
-./gradlew assembleRelease
-```
-* **Emplacement du fichier généré** :  
-  `android/app/build/outputs/apk/release/app-release.apk`
-
----
-
-### Option B : Génération d'APK via EAS Build (Cloud Expo)
-
-Si vous préférez générer vos APKs sur les serveurs sécurisés d'Expo sans configurer Android Studio localement :
-
-#### 1. Installer et configurer EAS CLI
-```bash
-npm install -g eas-cli
-eas login
-eas build:configure
-```
-
-#### 2. Générer un APK de Test Interne (Preview)
-```bash
-eas build -p android --profile preview
-```
-*Génère un lien de téléchargement direct de l'APK installable sur n'importe quel smartphone Android.*
-
-#### 3. Générer l'APK de Production
-```bash
+# Build cloud (EAS)
+npm install -g eas-cli && eas login
+eas build -p android --profile preview      # APK de test interne
 eas build -p android --profile production
 ```
 
----
+## Licence
 
-## 6. Garantie de Compatibilité Android 7.0+ (API Level 24)
-
-Ce template est spécialement calibré pour éviter les erreurs classiques de build Gradle sur les versions d'Android 7+ :
-
-1. **`minSdkVersion 24`** : Prise en charge de 99.5% des appareils Android en circulation.
-2. **MultiDex Activé** : Empêche l'erreur de dépassement de la table des 64K méthodes lors de la compilation de release.
-3. **Hermes JS Engine** : Démarrage instantané et empreinte mémoire réduite de 50%.
-4. **Zéro Conflit ProGuard / R8** : Conservation des interfaces réseau et des modules natifs lors de l'optimisation de release.
-
----
-
-## 7. Commandes Disponibles
-
-| Commande | Action |
-| :--- | :--- |
-| `pnpm start` | Démarre le serveur de développement Metro |
-| `pnpm android` | Ouvre l'application sur émulateur/appareil Android |
-| `pnpm ios` | Ouvre l'application sur simulateur iOS |
-| `pnpm web` | Démarre la version web locale |
-| `pnpm prebuild` | Génère les répertoires natifs `/android` et `/ios` |
-| `pnpm type-check` | Vérifie la conformité des types TypeScript |
-| `pnpm build:android:local:debug` | Compile l'APK local de debug |
-| `pnpm build:android:local:release` | Compile l'APK local de release (production) |
-
----
-
-## 8. Licence
-
-Ce template est sous licence libre **MIT**. Vous pouvez l'utiliser, le modifier et le distribuer librement pour tous vos projets commerciaux et personnels.
+MIT.

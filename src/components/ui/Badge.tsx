@@ -1,49 +1,40 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useThemeStore } from '../../stores/themeStore';
-import { spacing, typography } from '../../theme/spacing';
+import { StyleSheet, View } from 'react-native';
+import { useColors } from '../../theme';
+import { radius } from '../../theme/spacing';
+import { Text, type TextTone } from './Text';
 
 export interface BadgeProps {
   label: string;
-  variant?: 'default' | 'success' | 'warning' | 'danger' | 'info';
+  /** `brand` : état positif / repère. `neutral` : information. `danger` : alerte. */
+  tone?: 'brand' | 'neutral' | 'danger';
 }
 
-export const Badge: React.FC<BadgeProps> = ({ label, variant = 'default' }) => {
-  const { colors } = useThemeStore();
+/** Pastille d'état (ex. « Suivi réel », « Dans votre budget »). */
+export const Badge: React.FC<BadgeProps> = ({ label, tone = 'brand' }) => {
+  const colors = useColors();
 
-  const getBadgeColors = () => {
-    switch (variant) {
-      case 'success':
-        return { bg: colors.successLight, text: colors.success };
-      case 'warning':
-        return { bg: colors.warningLight, text: colors.warning };
-      case 'danger':
-        return { bg: colors.dangerLight, text: colors.danger };
-      case 'info':
-        return { bg: colors.surface, text: colors.primary };
-      default:
-        return { bg: colors.surface, text: colors.textSecondary };
-    }
+  const palette: Record<NonNullable<BadgeProps['tone']>, { background: string; text: TextTone }> = {
+    brand: { background: colors.primarySoft, text: 'primary' },
+    neutral: { background: colors.surfaceMuted, text: 'textSecondary' },
+    danger: { background: colors.dangerSoft, text: 'danger' },
   };
-
-  const badgeColors = getBadgeColors();
+  const { background, text } = palette[tone];
 
   return (
-    <View style={[styles.badge, { backgroundColor: badgeColors.bg }]}>
-      <Text style={[styles.text, { color: badgeColors.text }]}>{label}</Text>
+    <View style={[styles.badge, { backgroundColor: background }]}>
+      <Text variant="smallStrong" tone={text}>
+        {label}
+      </Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   badge: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    borderRadius: 8,
     alignSelf: 'flex-start',
-  },
-  text: {
-    fontSize: typography.fontSize.xs,
-    fontWeight: '700',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: radius.pill,
   },
 });

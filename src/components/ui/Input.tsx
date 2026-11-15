@@ -1,78 +1,69 @@
-import React from 'react';
-import {
-  View,
-  TextInput,
-  Text,
-  StyleSheet,
-  type TextInputProps,
-} from 'react-native';
-import { useThemeStore } from '../../stores/themeStore';
-import { spacing, typography } from '../../theme/spacing';
+import React, { useState } from 'react';
+import { StyleSheet, TextInput, type TextInputProps } from 'react-native';
+import { useColors } from '../../theme';
+import { textStyles } from '../../theme/typography';
+import { Field, FieldBox } from '../forms/Field';
+import { Text } from './Text';
 
-export interface InputProps extends TextInputProps {
-  label?: string;
+export interface InputProps extends Omit<TextInputProps, 'style'> {
+  label: string;
+  required?: boolean;
+  helper?: string;
   error?: string;
+  /** Texte fixe à droite de la saisie (ex. « FCFA »). */
+  suffix?: string;
+  /** Élément interactif ou indicatif à droite (ex. œil du mot de passe, coche de validité). */
+  trailing?: React.ReactNode;
 }
 
+/** Champ de saisie texte. */
 export const Input: React.FC<InputProps> = ({
   label,
+  required,
+  helper,
   error,
-  style,
-  ...props
+  suffix,
+  trailing,
+  onFocus,
+  onBlur,
+  ...inputProps
 }) => {
-  const { colors } = useThemeStore();
+  const colors = useColors();
+  const [focused, setFocused] = useState(false);
 
   return (
-    <View style={styles.container}>
-      {label && (
-        <Text style={[styles.label, { color: colors.textSecondary }]}>
-          {label}
-        </Text>
-      )}
-      <TextInput
-        style={[
-          styles.input,
-          {
-            backgroundColor: colors.surface,
-            borderColor: error ? colors.danger : colors.border,
-            color: colors.text,
-          },
-          style,
-        ]}
-        placeholderTextColor={colors.textSecondary}
-        {...props}
-      />
-      {error && (
-        <Text style={[styles.error, { color: colors.danger }]}>
-          {error}
-        </Text>
-      )}
-    </View>
+    <Field label={label} required={required} helper={helper} error={error}>
+      <FieldBox focused={focused} invalid={Boolean(error)}>
+        <TextInput
+          accessibilityLabel={label}
+          placeholderTextColor={colors.textSecondary}
+          selectionColor={colors.primary}
+          maxFontSizeMultiplier={1.3}
+          style={[styles.input, textStyles.lead, { color: colors.text }]}
+          onFocus={(event) => {
+            setFocused(true);
+            onFocus?.(event);
+          }}
+          onBlur={(event) => {
+            setFocused(false);
+            onBlur?.(event);
+          }}
+          {...inputProps}
+        />
+        {suffix ? (
+          <Text variant="caption" tone="textSecondary">
+            {suffix}
+          </Text>
+        ) : null}
+        {trailing}
+      </FieldBox>
+    </Field>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    width: '100%',
-    marginBottom: spacing.md,
-  },
-  label: {
-    fontSize: typography.fontSize.xs,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    marginBottom: spacing.xs,
-    letterSpacing: 0.5,
-  },
   input: {
-    height: 48,
-    borderRadius: 12,
-    borderWidth: 1,
-    paddingHorizontal: spacing.md,
-    fontSize: typography.fontSize.md,
-  },
-  error: {
-    fontSize: typography.fontSize.xs,
-    marginTop: spacing.xs,
-    fontWeight: '500',
+    flex: 1,
+    paddingVertical: 12,
   },
 });

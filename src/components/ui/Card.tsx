@@ -1,22 +1,26 @@
 import React from 'react';
-import { View, StyleSheet, type ViewProps } from 'react-native';
-import { useThemeStore } from '../../stores/themeStore';
-import { spacing } from '../../theme/spacing';
+import { StyleSheet, View, type ViewProps } from 'react-native';
+import { useColors } from '../../theme';
+import { layout, radius } from '../../theme/spacing';
 
 export interface CardProps extends ViewProps {
+  /** `muted` : encart discret sans bordure (informations complémentaires). */
+  tone?: 'default' | 'muted';
   children: React.ReactNode;
 }
 
-export const Card: React.FC<CardProps> = ({ children, style, ...props }) => {
-  const { colors } = useThemeStore();
+export const Card: React.FC<CardProps> = ({ tone = 'default', style, children, ...props }) => {
+  const colors = useColors();
+  const muted = tone === 'muted';
 
   return (
     <View
       style={[
         styles.card,
         {
-          backgroundColor: colors.card,
+          backgroundColor: muted ? colors.surfaceMuted : colors.surface,
           borderColor: colors.border,
+          borderWidth: muted ? 0 : 1,
         },
         style,
       ]}
@@ -29,13 +33,8 @@ export const Card: React.FC<CardProps> = ({ children, style, ...props }) => {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: spacing.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    borderRadius: radius.xl,
+    padding: layout.cardPadding,
+    gap: 14,
   },
 });
