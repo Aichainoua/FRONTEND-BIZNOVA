@@ -1,11 +1,31 @@
-export const lightColors = {
+export type ThemeColors = {
+  background: string;
+  surface: string;
+  card: string;
+  text: string;
+  textSecondary: string;
+  border: string;
+  primary: string;
+  primaryDark: string;
+  primaryLight: string;
+  accent: string;
+  danger: string;
+  dangerLight: string;
+  warning: string;
+  warningLight: string;
+  success: string;
+  successLight: string;
+  statusBar: 'dark' | 'light';
+};
+
+export const lightColors: ThemeColors = {
   background: '#FFFFFF',
   surface: '#F8FAFC',
   card: '#FFFFFF',
   text: '#0F172A',
   textSecondary: '#64748B',
   border: '#E2E8F0',
-  primary: '#0284C7', // Bleu corporate par défaut (personnalisable)
+  primary: '#0284C7',
   primaryDark: '#0369A1',
   primaryLight: '#E0F2FE',
   accent: '#059669',
@@ -15,10 +35,10 @@ export const lightColors = {
   warningLight: '#FEF3C7',
   success: '#059669',
   successLight: '#D1FAE5',
-  statusBar: 'dark' as const,
+  statusBar: 'dark',
 };
 
-export const darkColors = {
+export const darkColors: ThemeColors = {
   background: '#0F172A',
   surface: '#1E293B',
   card: '#1E293B',
@@ -35,7 +55,5 @@ export const darkColors = {
   warningLight: '#78350F',
   success: '#10B981',
   successLight: '#064E3B',
-  statusBar: 'light' as const,
+  statusBar: 'light',
 };
-
-export type ThemeColors = typeof lightColors;

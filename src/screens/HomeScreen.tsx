@@ -85,6 +85,7 @@ export const HomeScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           onPress={() => navigation.navigate('Details')}
           style={styles.actionBtn}
         />
+
       </ScrollView>
     </View>
   );
