@@ -1,0 +1,21 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Expo web",
+			"type": "shell",
+			"command": "pnpm",
+			"args": [
+				"exec",
+				"expo",
+				"start",
+				"--web",
+				"--port",
+				"8081"
+			],
+			"isBackground": true,
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}
